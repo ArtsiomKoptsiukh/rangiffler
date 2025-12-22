@@ -28,7 +28,7 @@ public class RegisterController {
   private static final String MODEL_USERNAME_ATTR = "username";
   private static final String MODEL_REG_FORM_ATTR = "registrationForm";
   private static final String MODEL_FRONT_URI_ATTR = "frontUri";
-  private static final String REG_MODEL_ERROR_BEAN_NAME = "org.springframework.validation.BindingResult.registrationModel";
+  private static final String REG_MODEL_ERROR_BEAN_NAME = "org.springframework.validation.BindingResult.registrationForm";
 
   private final UserService userService;
   private final String frontUri;

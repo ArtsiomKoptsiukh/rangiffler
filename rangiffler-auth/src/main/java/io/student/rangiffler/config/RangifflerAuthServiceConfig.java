@@ -89,6 +89,7 @@ public class RangifflerAuthServiceConfig {
     http
         .authorizeHttpRequests((authorize) -> authorize
             .requestMatchers(
+                    "/.well-known/**",
                 "/register",
                 "/error",
                 "/images/**",

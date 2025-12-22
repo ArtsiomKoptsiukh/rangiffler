@@ -1,3 +1,13 @@
 rootProject.name = 'rangiffler'
-include 'rangiffler-gateway'
-include 'rangiffler-auth'
+
+def modules = [
+        'rangiffler-gateway',
+        'rangiffler-auth',
+        'rangiffler-e2e',
+]
+
+modules.each { m ->
+    if (file(m).exists()) {
+        include m
+    }
+}
