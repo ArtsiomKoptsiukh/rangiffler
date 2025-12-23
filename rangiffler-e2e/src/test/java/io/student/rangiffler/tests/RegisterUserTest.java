@@ -35,7 +35,7 @@ public class RegisterUserTest extends BaseWebTest {
     }
 
     @Test
-    @DisplayName("User should")
+    @DisplayName("User should see validation error if password and confirmation password are different")
     void userShouldSeeValidationErrorIfPasswordAndConfirmationPasswordAreDifferent() {
         registrationPage
                 .registerUserWithInvalidCredentials("user1", "user1", "user2")

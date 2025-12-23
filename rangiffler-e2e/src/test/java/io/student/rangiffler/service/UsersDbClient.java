@@ -17,17 +17,17 @@ public class UsersDbClient implements UsersClient {
     private static final Config CFG = Config.getInstance();
     private final PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
-    @Override
-    public UserJson createUser(UserJson user) {
-
-        final String SQL_INSERT_USER_SCRIPT = """
+    final String SQL_INSERT_USER_SCRIPT = """
                 INSERT INTO `rangiffler-auth`.`user` (id, username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired)
                 VALUES (UUID_TO_BIN(?, true), ?, ?, ?, ?, ?, ?)
                 """;
-        final String SQL_INSERT_AUTHORITY_SCRIPT = """
+    final String SQL_INSERT_AUTHORITY_SCRIPT = """
                 INSERT INTO `rangiffler-auth`.`authority` (user_id, authority)
                 VALUES (UUID_TO_BIN(?, true), ?)
                 """;
+
+    @Override
+    public UserJson createUser(UserJson user) {
 
         try (Connection connection = DriverManager.getConnection(CFG.spendJdbcUrl(), CFG.dbUsername(), CFG.dbPassword())) {
             connection.setAutoCommit(false);

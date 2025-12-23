@@ -45,7 +45,7 @@ public class LoginTest {
     void userShouldStayOnLoginPageAfterLoginWithInvalidCredentials() {
         loginPage
                 .loginWithInvalidCredentials("username", "password")
-                .loginPageShouldBeOpened();
+                .shouldBeOpened();
     }
 
     @Test
@@ -53,7 +53,7 @@ public class LoginTest {
     void userShouldBeRedirectedToRegisterPageAfterPressingSignUpLink() {
         loginPage
                 .openRegistrationPage()
-                .registrationPageShouldBeOpened();
+                .shouldBeOpened();
     }
 
 }

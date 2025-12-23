@@ -6,27 +6,26 @@ import com.codeborne.selenide.SelenideElement;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
-public class LandingPage {
+public class LandingPage extends BasePage<LandingPage>{
 
     private final SelenideElement loginBtn = $("button.MuiButtonBase-root");
     private final SelenideElement registerBtn = $("a.MuiButtonBase-root");
 
-    public LandingPage shouldBeOpened() {
+    @Override
+    protected void verifyPageOpened() {
         loginBtn.shouldBe(visible);
         registerBtn.shouldBe(visible);
-
-        return this;
     }
 
     public LoginPage openLoginPage() {
         loginBtn.click();
 
-        return Selenide.page(LoginPage.class);
+        return Selenide.page(LoginPage.class).shouldBeOpened();
     }
 
     public RegistrationPage openRegistrationPage() {
         registerBtn.click();
 
-        return Selenide.page(RegistrationPage.class);
+        return Selenide.page(RegistrationPage.class).shouldBeOpened();
     }
 }

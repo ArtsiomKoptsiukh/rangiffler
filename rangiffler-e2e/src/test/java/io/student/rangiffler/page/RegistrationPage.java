@@ -7,7 +7,7 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
-public class RegistrationPage {
+public class RegistrationPage extends BasePage<RegistrationPage>{
 
     private final SelenideElement usernameInput = $("#username");
     private final SelenideElement passwordInput = $("#password");
@@ -17,12 +17,6 @@ public class RegistrationPage {
     private final SelenideElement registrationCompletedText = $(".form__paragraph_success");
     private final SelenideElement formError = $(".form__error");
 
-    public RegistrationPage registrationPageShouldBeOpened() {
-        signUpBtn.shouldBe(visible);
-
-        return this;
-    }
-
     public LandingPage registerUser(String username, String password) {
         usernameInput.setValue(username);
         passwordInput.setValue(password);
@@ -31,7 +25,7 @@ public class RegistrationPage {
         registrationCompletedText.shouldBe(visible);
         signInBtn.click();
 
-        return Selenide.page(LandingPage.class);
+        return Selenide.page(LandingPage.class).shouldBeOpened();
     }
 
     public RegistrationPage registerUserWithInvalidCredentials(String username, String password) {
@@ -68,4 +62,8 @@ public class RegistrationPage {
         return this;
     }
 
+    @Override
+    protected void verifyPageOpened() {
+        signUpBtn.shouldBe(visible);
+    }
 }
