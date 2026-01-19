@@ -23,11 +23,27 @@ subprojects {
         lombokVersion = '1.18.42'
         mysqlDriverVersion = '8.0.33'
         flywayVersion = '11.14.1'
+        springGrpcVersion = '3.1.0.RELEASE'
+        postgresDriverVersion = '42.7.8'
+        grpcVersion = '1.75.0'
+        protobufVersion = '4.32.0'
+        jakartaJaxbVersion = '4.0.2'
     }
 
     dependencyManagement {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:3.5.8"
         }
+    }
+
+    tasks.withType(Test).configureEach {
+        options {
+            systemProperties(System.getProperties())
+        }
+        testLogging {
+            showStandardStreams = true
+            exceptionFormat = 'full'
+        }
+        useJUnitPlatform()
     }
 }
