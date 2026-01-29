@@ -1,7 +1,7 @@
 rootProject.name = 'rangiffler'
 
 def modules = [
-        'rangiffler-gateway',
+        'rangiffler-api',
         'rangiffler-auth',
         'rangiffler-e2e',
 ]

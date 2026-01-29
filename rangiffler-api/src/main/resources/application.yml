@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: rangiffler-gateway
+    name: rangiffler-api
   graphql:
     graphiql:
       enabled: true
@@ -16,7 +16,7 @@ spring:
         jwt:
           issuer-uri: 'http://localhost:9000'
   datasource:
-    url: 'jdbc:mysql://localhost:3306/rangiffler-gateway?serverTimezone=UTC&createDatabaseIfNotExist=true'
+    url: 'jdbc:mysql://localhost:3306/rangiffler-api?serverTimezone=UTC&createDatabaseIfNotExist=true'
     hikari:
       connection-timeout: 20000
       minimum-idle: 10
@@ -30,11 +30,13 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 0
-    schemas: rangiffler-gateway
-    locations: classpath:db/migration/rangiffler-gateway
+    schemas: rangiffler-api
+    locations: classpath:db/migration/rangiffler-api
   jpa:
     hibernate:
       ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
         jdbc:
@@ -42,13 +44,17 @@ spring:
             non_contextual_creation: true
     database-platform: org.hibernate.dialect.MySQL8Dialect
     show-sql: false
-    generate-ddl: true
+    generate-ddl: false
     open-in-view: false
 
 logging:
   level:
     root: INFO
-    org.springframework.web: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.tool.schema: INFO
 
 rangiffler-front:
   base-uri: 'http://localhost:3001'
+rangiffler-auth:
+  base-uri: 'http://localhost:9000'
