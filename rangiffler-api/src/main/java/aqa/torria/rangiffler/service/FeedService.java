@@ -9,7 +9,7 @@ import aqa.torria.rangiffler.model.Stat;
 import aqa.torria.rangiffler.repository.FriendshipRepository;
 import aqa.torria.rangiffler.repository.PhotoRepository;
 import aqa.torria.rangiffler.repository.UserRepository;
-import aqa.torria.rangiffler.repository.projection.CountryStatRow;
+import aqa.torria.rangiffler.view.CountryStatView;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -53,7 +53,7 @@ public class FeedService {
             return List.of();
         }
 
-        List<CountryStatRow> rows = photoRepository.countByCountry(userIds);
+        List<CountryStatView> rows = photoRepository.countByCountry(userIds);
 
         return rows.stream()
                 .map(r -> new Stat(

@@ -1,8 +1,8 @@
-package aqa.torria.rangiffler.repository.projection;
+package aqa.torria.rangiffler.view;
 
 import aqa.torria.rangiffler.entity.CountryEntity;
 
-public interface CountryStatRow {
+public interface CountryStatView {
     CountryEntity getCountry();
     long getCount();
 }

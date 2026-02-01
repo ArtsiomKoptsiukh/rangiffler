@@ -1,7 +1,7 @@
 package aqa.torria.rangiffler.repository;
 
 import aqa.torria.rangiffler.entity.PhotoEntity;
-import aqa.torria.rangiffler.repository.projection.CountryStatRow;
+import aqa.torria.rangiffler.view.CountryStatView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -27,5 +27,5 @@ public interface PhotoRepository extends JpaRepository<PhotoEntity, UUID> {
             where p.userId in :userIds
             group by p.country
             """)
-    List<CountryStatRow> countByCountry(@Param("userIds") Collection<UUID> userIds);
+    List<CountryStatView> countByCountry(@Param("userIds") Collection<UUID> userIds);
 }
