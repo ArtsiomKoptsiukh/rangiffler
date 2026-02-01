@@ -4,21 +4,18 @@ import aqa.torria.rangiffler.entity.UserEntity;
 import aqa.torria.rangiffler.mappers.UserMapper;
 import aqa.torria.rangiffler.model.User;
 import aqa.torria.rangiffler.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
-
-    @Autowired
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-    }
+    UserRepository userRepository;
+    UserMapper userMapper;
 
     public User getCurrentUser(String username) {
         UserEntity entity = userRepository.findByUsername(username)

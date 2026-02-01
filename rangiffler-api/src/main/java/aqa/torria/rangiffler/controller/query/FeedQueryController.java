@@ -43,7 +43,7 @@ public class FeedQueryController {
 
     @SchemaMapping(typeName = "Feed", field = "stat")
     public List<Stat> stat(Feed feed) {
-        return List.of();
+        return feedService.loadFeedStat(feed.getUsername(), feed.getWithFriends());
     }
 
     @QueryMapping
