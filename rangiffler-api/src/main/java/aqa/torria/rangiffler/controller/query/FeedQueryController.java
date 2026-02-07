@@ -22,6 +22,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Controller
@@ -64,9 +65,10 @@ public class FeedQueryController {
     @QueryMapping
     public Feed feed(@Argument boolean withFriends,
                      @AuthenticationPrincipal Jwt principal) {
+        String username = Objects.requireNonNull(principal.getClaimAsString("sub"), "sub is missing");
 
         return Feed.builder()
-                .username(principal.getClaimAsString("sub"))
+                .username(username)
                 .withFriends(withFriends)
                 .build();
     }

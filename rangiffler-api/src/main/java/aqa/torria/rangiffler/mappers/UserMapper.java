@@ -2,8 +2,8 @@ package aqa.torria.rangiffler.mappers;
 
 import aqa.torria.rangiffler.entity.UserEntity;
 import aqa.torria.rangiffler.model.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import aqa.torria.rangiffler.model.UserInput;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", uses = CountryMapper.class)
 public interface UserMapper {
@@ -23,6 +23,15 @@ public interface UserMapper {
     @Mapping(target = "avatar", expression = "java(stringToBytes(user.getAvatar()))")
     @Mapping(target = "country", source = "location")
     UserEntity toUserEntity(User user);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "firstname", source = "firstname")
+    @Mapping(target = "lastName", source = "surname")
+    @Mapping(target = "avatar", expression = "java(stringToBytes(input.getAvatar()))")
+    @Mapping(target = "country", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "username", ignore = true)
+    UserEntity patchUser(UserInput input, @MappingTarget UserEntity entity);
 
     default String bytesToString(byte[] bytes) {
         return bytes != null ? new String(bytes, java.nio.charset.StandardCharsets.UTF_8) : null;

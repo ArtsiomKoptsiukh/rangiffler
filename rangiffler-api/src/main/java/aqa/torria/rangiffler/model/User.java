@@ -15,7 +15,6 @@ public class User {
     private FriendStatus friendStatus;
     private Country location;
 
-    // Эти поля будут заполняться через резолверы GraphQL
     private Page<User> friends;
     private Page<User> incomeInvitations;
     private Page<User> outcomeInvitations;
