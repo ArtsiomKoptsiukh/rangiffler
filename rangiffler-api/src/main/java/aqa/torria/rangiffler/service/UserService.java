@@ -6,6 +6,7 @@ import aqa.torria.rangiffler.entity.UserEntity;
 import aqa.torria.rangiffler.mappers.UserMapper;
 import aqa.torria.rangiffler.model.FriendshipInput;
 import aqa.torria.rangiffler.model.FriendshipStatus;
+import aqa.torria.rangiffler.model.FriendStatus;
 import aqa.torria.rangiffler.model.User;
 import aqa.torria.rangiffler.model.UserInput;
 import aqa.torria.rangiffler.repository.CountryRepository;
@@ -21,6 +22,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -41,11 +44,11 @@ public class UserService {
     }
 
     public Page<User> getFriends(UserEntity user, Pageable pageable, String searchQuery) {
-        var slice = (searchQuery == null || searchQuery.isBlank())
+        Page<UserEntity> slice = (searchQuery == null || searchQuery.isBlank())
                 ? friendshipRepository.findFriends(user, pageable)
                 : friendshipRepository.findFriends(user, pageable, searchQuery);
 
-        var users = slice.getContent().stream()
+        List<User> users = slice.getContent().stream()
                 .map(userMapper::toUser)
                 .toList();
 
@@ -53,11 +56,11 @@ public class UserService {
     }
 
     public Page<User> getIncomeInvitations(UserEntity user, Pageable pageable, String searchQuery) {
-        var slice = (searchQuery == null || searchQuery.isBlank())
+        Page<UserEntity> slice = (searchQuery == null || searchQuery.isBlank())
                 ? friendshipRepository.findIncomeInvitations(user, pageable)
                 : friendshipRepository.findIncomeInvitations(user, pageable, searchQuery);
 
-        var users = slice.getContent().stream()
+        List<User> users = slice.getContent().stream()
                 .map(userMapper::toUser)
                 .toList();
 
@@ -65,11 +68,11 @@ public class UserService {
     }
 
     public Page<User> getOutcomeInvitations(UserEntity user, Pageable pageable, String searchQuery) {
-        var slice = (searchQuery == null || searchQuery.isBlank())
+        Page<UserEntity> slice = (searchQuery == null || searchQuery.isBlank())
                 ? friendshipRepository.findOutcomeInvitations(user, pageable)
                 : friendshipRepository.findOutcomeInvitations(user, pageable, searchQuery);
 
-        var users = slice.getContent().stream()
+        List<User> users = slice.getContent().stream()
                 .map(userMapper::toUser)
                 .toList();
 
@@ -79,6 +82,51 @@ public class UserService {
     public UserEntity getUserEntityByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
+    }
+
+    public Page<User> getAllUsers(String currentUsername, Pageable pageable, String searchQuery) {
+        UserEntity currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found: " + currentUsername));
+
+        Page<UserEntity> page = (searchQuery == null || searchQuery.isBlank())
+                ? userRepository.findAllExceptCurrent(currentUsername, pageable)
+                : userRepository.findAllExceptCurrent(currentUsername, pageable, searchQuery);
+
+        List<User> users = page.getContent().stream()
+                .map(userEntity -> {
+                    User user = userMapper.toUser(userEntity);
+                    user.setFriendStatus(determineFriendStatus(currentUser, userEntity));
+                    return user;
+                })
+                .toList();
+
+        return new PageImpl<>(users, pageable, page.getTotalElements());
+    }
+
+    private FriendStatus determineFriendStatus(UserEntity currentUser, UserEntity targetUser) {
+        // Проверяем, есть ли дружба от currentUser к targetUser
+        Optional<FriendshipEntity> friendshipAsRequester = friendshipRepository.findByRequesterAndAddressee(currentUser, targetUser);
+        if (friendshipAsRequester.isPresent()) {
+            FriendshipEntity friendship = friendshipAsRequester.get();
+            if (friendship.getStatus() == FriendshipStatus.ACCEPTED) {
+                return FriendStatus.FRIEND;
+            } else if (friendship.getStatus() == FriendshipStatus.PENDING) {
+                return FriendStatus.INVITATION_SENT;
+            }
+        }
+
+        // Проверяем, есть ли дружба от targetUser к currentUser
+        Optional<FriendshipEntity> friendshipAsAddressee = friendshipRepository.findByRequesterAndAddressee(targetUser, currentUser);
+        if (friendshipAsAddressee.isPresent()) {
+            FriendshipEntity friendship = friendshipAsAddressee.get();
+            if (friendship.getStatus() == FriendshipStatus.ACCEPTED) {
+                return FriendStatus.FRIEND;
+            } else if (friendship.getStatus() == FriendshipStatus.PENDING) {
+                return FriendStatus.INVITATION_RECEIVED;
+            }
+        }
+
+        return FriendStatus.NOT_FRIEND;
     }
 
     @Transactional

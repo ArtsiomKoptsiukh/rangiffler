@@ -34,6 +34,16 @@ public class UserQueryController {
         return userService.getCurrentUser(username);
     }
 
+    @QueryMapping
+    public Page<User> users(@AuthenticationPrincipal Jwt jwt,
+                            @Argument Integer page,
+                            @Argument Integer size,
+                            @Argument @Nullable String searchQuery) {
+        String currentUsername = jwt.getClaim("sub");
+        Pageable pageable = new GqlQueryPaginationAndSort(page, size, List.of()).pageable();
+        return userService.getAllUsers(currentUsername, pageable, searchQuery);
+    }
+
     @SchemaMapping(typeName = "User", field = "friends")
     public Page<User> friends(User user,
                               @Argument Integer page,
