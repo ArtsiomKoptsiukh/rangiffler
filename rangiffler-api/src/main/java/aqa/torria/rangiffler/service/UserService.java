@@ -43,7 +43,8 @@ public class UserService {
         return userMapper.toUser(entity);
     }
 
-    public Page<User> getFriends(UserEntity user, Pageable pageable, String searchQuery) {
+    public Page<User> getFriends(String username, Pageable pageable, String searchQuery) {
+        UserEntity user = getUserEntityByUsername(username);
         Page<UserEntity> slice = (searchQuery == null || searchQuery.isBlank())
                 ? friendshipRepository.findFriends(user, pageable)
                 : friendshipRepository.findFriends(user, pageable, searchQuery);
@@ -55,7 +56,8 @@ public class UserService {
         return new PageImpl<>(users, pageable, users.size());
     }
 
-    public Page<User> getIncomeInvitations(UserEntity user, Pageable pageable, String searchQuery) {
+    public Page<User> getIncomeInvitations(String username, Pageable pageable, String searchQuery) {
+        UserEntity user = getUserEntityByUsername(username);
         Page<UserEntity> slice = (searchQuery == null || searchQuery.isBlank())
                 ? friendshipRepository.findIncomeInvitations(user, pageable)
                 : friendshipRepository.findIncomeInvitations(user, pageable, searchQuery);
@@ -67,7 +69,8 @@ public class UserService {
         return new PageImpl<>(users, pageable, users.size());
     }
 
-    public Page<User> getOutcomeInvitations(UserEntity user, Pageable pageable, String searchQuery) {
+    public Page<User> getOutcomeInvitations(String username, Pageable pageable, String searchQuery) {
+        UserEntity user = getUserEntityByUsername(username);
         Page<UserEntity> slice = (searchQuery == null || searchQuery.isBlank())
                 ? friendshipRepository.findOutcomeInvitations(user, pageable)
                 : friendshipRepository.findOutcomeInvitations(user, pageable, searchQuery);

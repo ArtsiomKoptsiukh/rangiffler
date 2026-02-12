@@ -1,6 +1,5 @@
 package aqa.torria.rangiffler.controller.query;
 
-import aqa.torria.rangiffler.entity.UserEntity;
 import aqa.torria.rangiffler.model.User;
 import aqa.torria.rangiffler.service.UserService;
 import aqa.torria.rangiffler.util.GqlQueryPaginationAndSort;
@@ -50,8 +49,7 @@ public class UserQueryController {
                               @Argument Integer size,
                               @Argument @Nullable String searchQuery) {
         Pageable pageable = new GqlQueryPaginationAndSort(page, size, List.of()).pageable();
-        UserEntity userEntity = userService.getUserEntityByUsername(user.getUsername());
-        return userService.getFriends(userEntity, pageable, searchQuery);
+        return userService.getFriends(user.getUsername(), pageable, searchQuery);
     }
 
     @SchemaMapping(typeName = "User", field = "incomeInvitations")
@@ -60,8 +58,7 @@ public class UserQueryController {
                                         @Argument Integer size,
                                         @Argument @Nullable String searchQuery) {
         Pageable pageable = new GqlQueryPaginationAndSort(page, size, List.of()).pageable();
-        UserEntity userEntity = userService.getUserEntityByUsername(user.getUsername());
-        return userService.getIncomeInvitations(userEntity, pageable, searchQuery);
+        return userService.getIncomeInvitations(user.getUsername(), pageable, searchQuery);
     }
 
     @SchemaMapping(typeName = "User", field = "outcomeInvitations")
@@ -70,7 +67,6 @@ public class UserQueryController {
                                          @Argument Integer size,
                                          @Argument @Nullable String searchQuery) {
         Pageable pageable = new GqlQueryPaginationAndSort(page, size, List.of()).pageable();
-        UserEntity userEntity = userService.getUserEntityByUsername(user.getUsername());
-        return userService.getOutcomeInvitations(userEntity, pageable, searchQuery);
+        return userService.getOutcomeInvitations(user.getUsername(), pageable, searchQuery);
     }
 }
