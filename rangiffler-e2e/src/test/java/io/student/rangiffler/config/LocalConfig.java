@@ -10,8 +10,13 @@ public enum LocalConfig implements Config {
   }
 
   @Override
-  public String spendJdbcUrl() {
+  public String authJdbcUrl() {
     return "jdbc:mysql://localhost:3306/rangiffler-auth?serverTimezone=UTC&createDatabaseIfNotExist=true";
+  }
+
+  @Override
+  public String apiJdbcUrl() {
+    return "jdbc:mysql://localhost:3306/rangiffler-api?serverTimezone=UTC&createDatabaseIfNotExist=true";
   }
 
   @Override
