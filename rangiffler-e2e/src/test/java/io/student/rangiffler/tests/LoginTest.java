@@ -2,7 +2,8 @@ package io.student.rangiffler.tests;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
-import io.student.rangiffler.jupiter.User;
+import io.student.rangiffler.jupiter.annotation.DisabledByIssue;
+import io.student.rangiffler.jupiter.annotation.User;
 import io.student.rangiffler.model.UserJson;
 import io.student.rangiffler.page.LandingPage;
 import io.student.rangiffler.page.LoginPage;
@@ -25,6 +26,7 @@ public class LoginTest {
 
     @Test
     @User
+    @DisabledByIssue("3")
     @DisplayName("User should see World Map on the main page after login")
     void existedUserShouldBeAbleToLogin(UserJson user) {
         loginPage

@@ -1,6 +1,7 @@
-package io.student.rangiffler.jupiter;
+package io.student.rangiffler.jupiter.extention;
 
 import com.github.javafaker.Faker;
+import io.student.rangiffler.jupiter.annotation.User;
 import io.student.rangiffler.model.UserJson;
 import io.student.rangiffler.service.UsersClient;
 import io.student.rangiffler.service.UsersDbClient;
