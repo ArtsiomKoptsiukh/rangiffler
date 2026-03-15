@@ -22,4 +22,11 @@ public class QueueUsersTest {
         System.out.println(user);
     }
 
+    @Test
+    void testWithTwoUsers(@UserType(empty = false) StaticUser user1, @UserType(empty = true) StaticUser user2, @UserType(empty = false) StaticUser user3) throws InterruptedException {
+        System.out.println(user1);
+        System.out.println(user2);
+        System.out.println(user3);
+    }
+
 }

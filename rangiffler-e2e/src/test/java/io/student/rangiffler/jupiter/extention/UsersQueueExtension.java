@@ -42,12 +42,11 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
     public void beforeEach(ExtensionContext context) throws Exception {
         Arrays.stream(context.getRequiredTestMethod().getParameters())
                 .filter(p -> AnnotationSupport.isAnnotated(p, UserType.class))
-                .findFirst()
-                .map(p -> p.getAnnotation(UserType.class))
-                .ifPresent(
-                        ut -> {
+                .forEach(
+                        p -> {
                             Optional<StaticUser> user = Optional.empty();
                             StopWatch sw = StopWatch.createStarted();
+                            UserType ut = p.getAnnotation(UserType.class);
                             while (user.isEmpty() && sw.getTime(TimeUnit.SECONDS) < 30) {
                                 user = ut.empty()
                                         ? Optional.ofNullable(EMPTY_USERS.poll())
@@ -58,10 +57,8 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
                             });
 
                             user.ifPresentOrElse(
-                                    u -> {
-                                        context.getStore(NAMESPACE).put(context.getUniqueId(), u);
-                                    },
-                                    () -> new IllegalStateException("Can't find user after 30 seconds")
+                                    u -> context.getStore(NAMESPACE).put(p.getName(), u),
+                                    () -> { throw new IllegalStateException("Can't find user after 30 seconds"); }
                             );
                         }
                 );
@@ -69,10 +66,21 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-        StaticUser user = context.getStore(NAMESPACE).get(context.getUniqueId(), StaticUser.class);
-        if (user.empty()) {
-            EMPTY_USERS.add(user);
-        } else NOT_EMPTY_USERS.add(user);
+        Arrays.stream(context.getRequiredTestMethod().getParameters())
+                .filter(p -> AnnotationSupport.isAnnotated(p, UserType.class))
+                .forEach(
+                        p -> {
+                            StaticUser user = context.getStore(NAMESPACE).get(p.getName(), StaticUser.class);
+                            if (user == null) {
+                                throw new IllegalStateException("User not found in store: " + p.getName());
+                            }
+                            if (user.empty()) {
+                                EMPTY_USERS.add(user);
+                            } else {
+                                NOT_EMPTY_USERS.add(user);
+                            }
+                        }
+                );
     }
 
     @Override
@@ -83,6 +91,6 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
 
     @Override
     public StaticUser resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), StaticUser.class);
+        return extensionContext.getStore(NAMESPACE).get(parameterContext.getParameter().getName(), StaticUser.class);
     }
 }
