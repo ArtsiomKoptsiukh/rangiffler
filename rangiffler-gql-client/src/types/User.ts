@@ -7,5 +7,5 @@ export type User = {
     firstname?: string;
     surname?: string;
     avatar?: string;
-    friendStatus?: "FRIEND" | "INVITATION_SENT" | "INVITATION_RECEIVED";
+    friendStatus?: "NOT_FRIEND" | "FRIEND" | "INVITATION_SENT" | "INVITATION_RECEIVED";
 }
