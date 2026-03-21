@@ -29,6 +29,18 @@ public class UsersDbClient implements UsersClient {
                 INSERT INTO `rangiffler-api`.`user` (id, username, first_name, last_name, avatar, country_id)
                 VALUES (UUID_TO_BIN(?, true), ?, NULL, NULL, NULL, (SELECT id FROM `rangiffler-api`.`country` LIMIT 1))
                 """;
+    final String SQL_DELETE_USER_FROM_AUTH_SCRIPT = """
+            DELETE FROM `rangiffler-auth`.`user`
+            WHERE id = UUID_TO_BIN(?, true)
+            """;
+    final String SQL_DELETE_AUTHORITY_SCRIPT = """
+                DELETE FROM `rangiffler-auth`.`authority`
+                WHERE user_id = UUID_TO_BIN(?, true)
+            """;
+    final String SQL_DELETE_USER_FROM_API_SCRIPT = """
+            DELETE FROM `rangiffler-api`.`user`
+            WHERE id = UUID_TO_BIN(?, true)
+            """;
 
     @Override
     public UserJson createUser(UserJson user) {
@@ -87,6 +99,53 @@ public class UsersDbClient implements UsersClient {
             }
         } catch (Exception e) {
             throw new RuntimeException("Failed to create user in auth/api DBs", e);
+        }
+    }
+
+    @Override
+    public void deleteUser(String userId) {
+        try (
+                Connection authConnection = DriverManager.getConnection(CFG.authJdbcUrl(), CFG.dbUsername(), CFG.dbPassword());
+                Connection apiConnection = DriverManager.getConnection(CFG.apiJdbcUrl(), CFG.dbUsername(), CFG.dbPassword())
+        ) {
+            authConnection.setAutoCommit(false);
+            apiConnection.setAutoCommit(false);
+
+            JdbcTemplate authJdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(authConnection, true));
+            JdbcTemplate apiJdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(apiConnection, true));
+
+            try {
+                authJdbcTemplate.update(conn -> {
+                    PreparedStatement ps = conn.prepareStatement(SQL_DELETE_AUTHORITY_SCRIPT);
+                    ps.setString(1, userId);
+
+                    return ps;
+                });
+
+                authJdbcTemplate.update(conn -> {
+                    PreparedStatement ps = conn.prepareStatement(SQL_DELETE_USER_FROM_AUTH_SCRIPT);
+                    ps.setString(1, userId);
+
+                    return ps;
+                });
+
+                apiJdbcTemplate.update(conn -> {
+                    PreparedStatement ps = conn.prepareStatement(SQL_DELETE_USER_FROM_API_SCRIPT);
+                    ps.setString(1, userId);
+
+                    return ps;
+                });
+
+                authConnection.commit();
+                apiConnection.commit();
+            } catch (Exception e) {
+                authConnection.rollback();
+                apiConnection.rollback();
+
+                throw e;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete user from auth/api DBs", e);
         }
     }
 

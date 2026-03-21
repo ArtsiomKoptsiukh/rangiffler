@@ -8,7 +8,7 @@ import io.student.rangiffler.service.UsersDbClient;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-public class UserExtension implements BeforeEachCallback, ParameterResolver {
+public class UserExtension implements BeforeEachCallback, ParameterResolver, AfterEachCallback {
 
     private static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
 
@@ -27,6 +27,17 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver {
     }
 
     @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+        AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
+                .ifPresent(userAnnotation -> {
+                    UserJson user = context.getStore(NAMESPACE).get(context.getUniqueId(), UserJson.class);
+                    if (user != null) {
+                        createUserApi.deleteUser(user.id());
+                    }
+                });
+    }
+
+    @Override
     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return parameterContext.getParameter().getType().isAssignableFrom(UserJson.class);
     }
@@ -35,4 +46,6 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver {
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
         return extensionContext.getStore(NAMESPACE).get(extensionContext.getUniqueId(), UserJson.class);
     }
+
+
 }

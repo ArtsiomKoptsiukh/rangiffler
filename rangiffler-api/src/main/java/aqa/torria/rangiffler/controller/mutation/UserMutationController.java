@@ -35,9 +35,9 @@ public class UserMutationController {
 
     @MutationMapping(name = "friendship")
     public User friendship(@AuthenticationPrincipal Jwt principal,
-                           @Argument @Valid FriendshipInput friendshipInput) {
+                           @Argument("input") @Valid FriendshipInput input) {
         String username = Objects.requireNonNull(principal.getClaimAsString("sub"), "Sub is missing in JWT");
 
-        return userService.updateFriendship(username, friendshipInput);
+        return userService.updateFriendship(username, input);
     }
 }

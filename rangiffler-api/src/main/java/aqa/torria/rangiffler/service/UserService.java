@@ -50,10 +50,14 @@ public class UserService {
                 : friendshipRepository.findFriends(user, pageable, searchQuery);
 
         List<User> users = slice.getContent().stream()
-                .map(userMapper::toUser)
+                .map(entity -> {
+                    User u = userMapper.toUser(entity);
+                    u.setFriendStatus(FriendStatus.FRIEND);
+                    return u;
+                })
                 .toList();
 
-        return new PageImpl<>(users, pageable, users.size());
+        return new PageImpl<>(users, pageable, slice.getTotalElements());
     }
 
     public Page<User> getIncomeInvitations(String username, Pageable pageable, String searchQuery) {
@@ -63,10 +67,14 @@ public class UserService {
                 : friendshipRepository.findIncomeInvitations(user, pageable, searchQuery);
 
         List<User> users = slice.getContent().stream()
-                .map(userMapper::toUser)
+                .map(entity -> {
+                    User u = userMapper.toUser(entity);
+                    u.setFriendStatus(FriendStatus.INVITATION_RECEIVED);
+                    return u;
+                })
                 .toList();
 
-        return new PageImpl<>(users, pageable, users.size());
+        return new PageImpl<>(users, pageable, slice.getTotalElements());
     }
 
     public Page<User> getOutcomeInvitations(String username, Pageable pageable, String searchQuery) {
@@ -76,10 +84,14 @@ public class UserService {
                 : friendshipRepository.findOutcomeInvitations(user, pageable, searchQuery);
 
         List<User> users = slice.getContent().stream()
-                .map(userMapper::toUser)
+                .map(entity -> {
+                    User u = userMapper.toUser(entity);
+                    u.setFriendStatus(FriendStatus.INVITATION_SENT);
+                    return u;
+                })
                 .toList();
 
-        return new PageImpl<>(users, pageable, users.size());
+        return new PageImpl<>(users, pageable, slice.getTotalElements());
     }
 
     public UserEntity getUserEntityByUsername(String username) {
@@ -107,7 +119,6 @@ public class UserService {
     }
 
     private FriendStatus determineFriendStatus(UserEntity currentUser, UserEntity targetUser) {
-        // Проверяем, есть ли дружба от currentUser к targetUser
         Optional<FriendshipEntity> friendshipAsRequester = friendshipRepository.findByRequesterAndAddressee(currentUser, targetUser);
         if (friendshipAsRequester.isPresent()) {
             FriendshipEntity friendship = friendshipAsRequester.get();
@@ -118,7 +129,6 @@ public class UserService {
             }
         }
 
-        // Проверяем, есть ли дружба от targetUser к currentUser
         Optional<FriendshipEntity> friendshipAsAddressee = friendshipRepository.findByRequesterAndAddressee(targetUser, currentUser);
         if (friendshipAsAddressee.isPresent()) {
             FriendshipEntity friendship = friendshipAsAddressee.get();
@@ -158,17 +168,38 @@ public class UserService {
         UserEntity targetUser = userRepository.findById(UUID.fromString(input.getUser()))
                 .orElseThrow(() -> new IllegalArgumentException("Target user not found: " + input.getUser()));
 
+        FriendStatus resultStatus;
         switch (input.getAction()) {
-            case ADD -> sendFriendRequest(currentUser, targetUser);
-            case ACCEPT -> acceptFriendRequest(currentUser, targetUser);
-            case REJECT -> rejectFriendRequest(currentUser, targetUser);
-            case DELETE -> deleteFriend(currentUser, targetUser);
+            case ADD -> {
+                sendFriendRequest(currentUser, targetUser);
+                resultStatus = FriendStatus.INVITATION_SENT;
+            }
+            case ACCEPT -> {
+                acceptFriendRequest(currentUser, targetUser);
+                resultStatus = FriendStatus.FRIEND;
+            }
+            case REJECT -> {
+                rejectFriendRequest(currentUser, targetUser);
+                resultStatus = FriendStatus.NOT_FRIEND;
+            }
+            case DELETE -> {
+                deleteFriend(currentUser, targetUser);
+                resultStatus = FriendStatus.NOT_FRIEND;
+            }
+            default -> resultStatus = FriendStatus.NOT_FRIEND;
         }
 
-        return userMapper.toUser(targetUser);
+        User user = userMapper.toUser(targetUser);
+        user.setFriendStatus(resultStatus);
+        return user;
     }
 
     private void sendFriendRequest(UserEntity currentUser, UserEntity targetUser) {
+        boolean alreadyExists = friendshipRepository.findByRequesterAndAddressee(currentUser, targetUser).isPresent()
+                || friendshipRepository.findByRequesterAndAddressee(targetUser, currentUser).isPresent();
+        if (alreadyExists) {
+            throw new IllegalStateException("Friendship request already exists");
+        }
         FriendshipEntity friendship = new FriendshipEntity(
                 currentUser,
                 targetUser,
@@ -179,12 +210,10 @@ public class UserService {
     }
 
     private void acceptFriendRequest(UserEntity currentUser, UserEntity targetUser) {
-        // targetUser отправил запрос currentUser, поэтому targetUser = requester, currentUser = addressee
         friendshipRepository.updateFriendshipStatus(targetUser, currentUser, FriendshipStatus.ACCEPTED);
     }
 
     private void rejectFriendRequest(UserEntity currentUser, UserEntity targetUser) {
-        // targetUser отправил запрос currentUser, поэтому targetUser = requester, currentUser = addressee
         friendshipRepository.deleteFriendship(targetUser, currentUser);
     }
 

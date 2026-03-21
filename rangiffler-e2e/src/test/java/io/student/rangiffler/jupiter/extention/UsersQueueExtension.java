@@ -20,22 +20,29 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
 
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UsersQueueExtension.class);
 
-    public record StaticUser(String name, String password, boolean empty) {
+    public record StaticUser(String name, String password, String friend, String incomeRequest, String outcomeRequest) {
     }
 
     private static final Queue<StaticUser> EMPTY_USERS = new ConcurrentLinkedQueue<>();
-    private static final Queue<StaticUser> NOT_EMPTY_USERS = new ConcurrentLinkedQueue<>();
+    private static final Queue<StaticUser> WITH_FRIEND_USERS = new ConcurrentLinkedQueue<>();
+    private static final Queue<StaticUser> WITH_INCOME_REQUEST_USERS = new ConcurrentLinkedQueue<>();
+    private static final Queue<StaticUser> WITH_OUTCOME_REQUEST_USERS = new ConcurrentLinkedQueue<>();
 
     {
-        EMPTY_USERS.add(new StaticUser("Britni", "12345", true));
-        NOT_EMPTY_USERS.add(new StaticUser("Daren", "12345", false));
-        NOT_EMPTY_USERS.add(new StaticUser("Raphael", "12345", false));
+        EMPTY_USERS.add(new StaticUser("Britni", "12345", null, null, null));
+        WITH_FRIEND_USERS.add(new StaticUser("Anderson", "12345", "Lin", null, null));
+        WITH_INCOME_REQUEST_USERS.add(new StaticUser("Val", "12345", null, "Lin", null));
+        WITH_OUTCOME_REQUEST_USERS.add(new StaticUser("Lin", "12345", null, null, "Val"));
     }
 
     @Target(ElementType.PARAMETER)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface UserType {
-        boolean empty() default true;
+        Type value() default Type.EMPTY;
+
+        enum Type {
+            EMPTY, WITH_FRIEND, WITH_INCOME_REQUEST, WITH_OUTCOME_REQUEST
+        }
     }
 
     @Override
@@ -48,9 +55,7 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
                             StopWatch sw = StopWatch.createStarted();
                             UserType ut = p.getAnnotation(UserType.class);
                             while (user.isEmpty() && sw.getTime(TimeUnit.SECONDS) < 30) {
-                                user = ut.empty()
-                                        ? Optional.ofNullable(EMPTY_USERS.poll())
-                                        : Optional.ofNullable(NOT_EMPTY_USERS.poll());
+                                user = Optional.ofNullable(getQueueByType(ut.value()).poll());
                             }
                             Allure.getLifecycle().updateTestCase(tesCase -> {
                                 tesCase.setStart(new Date().getTime());
@@ -64,6 +69,15 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
                 );
     }
 
+    private Queue<StaticUser> getQueueByType(UserType.Type type) {
+        return switch (type) {
+            case EMPTY -> EMPTY_USERS;
+            case WITH_FRIEND -> WITH_FRIEND_USERS;
+            case WITH_INCOME_REQUEST -> WITH_INCOME_REQUEST_USERS;
+            case WITH_OUTCOME_REQUEST -> WITH_OUTCOME_REQUEST_USERS;
+        };
+    }
+
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
         Arrays.stream(context.getRequiredTestMethod().getParameters())
@@ -74,11 +88,8 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
                             if (user == null) {
                                 throw new IllegalStateException("User not found in store: " + p.getName());
                             }
-                            if (user.empty()) {
-                                EMPTY_USERS.add(user);
-                            } else {
-                                NOT_EMPTY_USERS.add(user);
-                            }
+                            UserType ut = p.getAnnotation(UserType.class);
+                            getQueueByType(ut.value()).add(user);
                         }
                 );
     }

@@ -33,21 +33,42 @@ public interface FriendshipRepository extends JpaRepository<FriendshipEntity, Fr
 
     Optional<FriendshipEntity> findByRequesterAndAddressee(UserEntity requester, UserEntity addressee);
 
-    @Query("select u from UserEntity u join FriendshipEntity f on u = f.addressee" +
-            " where f.status = aqa.torria.rangiffler.model.FriendshipStatus.ACCEPTED and f.requester = :requester")
-    Page<UserEntity> findFriends(@Param("requester") UserEntity requester,
+    @Query("""
+            select u from UserEntity u
+            where exists (
+                select f from FriendshipEntity f
+                where f.status = aqa.torria.rangiffler.model.FriendshipStatus.ACCEPTED
+                  and ((f.requester = :user and f.addressee = u)
+                    or (f.addressee = :user and f.requester = u))
+            )
+            """)
+    Page<UserEntity> findFriends(@Param("user") UserEntity user,
                                  @Nonnull Pageable pageable);
 
-    @Query("select u from UserEntity u join FriendshipEntity f on u = f.addressee" +
-            " where f.status = aqa.torria.rangiffler.model.FriendshipStatus.ACCEPTED and f.requester = :requester" +
-            " and (u.username like %:searchQuery% or u.firstname like %:searchQuery% or u.lastName like %:searchQuery%)")
-    Page<UserEntity> findFriends(@Param("requester") UserEntity requester,
-                                  @Nonnull Pageable pageable,
-                                  @Param("searchQuery") String searchQuery);
+    @Query("""
+            select u from UserEntity u
+            where exists (
+                select f from FriendshipEntity f
+                where f.status = aqa.torria.rangiffler.model.FriendshipStatus.ACCEPTED
+                  and ((f.requester = :user and f.addressee = u)
+                    or (f.addressee = :user and f.requester = u))
+            )
+            and (u.username like %:searchQuery% or u.firstname like %:searchQuery% or u.lastName like %:searchQuery%)
+            """)
+    Page<UserEntity> findFriends(@Param("user") UserEntity user,
+                                 @Nonnull Pageable pageable,
+                                 @Param("searchQuery") String searchQuery);
 
-    @Query("select u from UserEntity u join FriendshipEntity f on u = f.addressee" +
-            " where f.status = aqa.torria.rangiffler.model.FriendshipStatus.ACCEPTED and f.requester = :requester")
-    List<UserEntity> findFriends(@Param("requester") UserEntity requester);
+    @Query("""
+            select u from UserEntity u
+            where exists (
+                select f from FriendshipEntity f
+                where f.status = aqa.torria.rangiffler.model.FriendshipStatus.ACCEPTED
+                  and ((f.requester = :user and f.addressee = u)
+                    or (f.addressee = :user and f.requester = u))
+            )
+            """)
+    List<UserEntity> findFriends(@Param("user") UserEntity user);
 
     // ===== Исходящие приглашения (PENDING, requester = текущий пользователь) =====
     @Query("select u from UserEntity u join FriendshipEntity f on u = f.addressee" +

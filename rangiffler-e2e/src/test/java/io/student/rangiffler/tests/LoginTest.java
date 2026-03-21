@@ -26,7 +26,7 @@ public class LoginTest {
 
     @Test
     @User
-    @DisabledByIssue("3")
+    //@DisabledByIssue("3")
     @DisplayName("User should see World Map on the main page after login")
     void existedUserShouldBeAbleToLogin(UserJson user) {
         loginPage

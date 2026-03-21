@@ -10,7 +10,7 @@ import static io.student.rangiffler.jupiter.extention.UsersQueueExtension.*;
 @ExtendWith(UsersQueueExtension.class)
 public class QueueUsersTest {
 
-    @Test
+   /* @Test
     void testWithEmptyUser0(@UserType(empty = true) StaticUser user) throws InterruptedException {
         Thread.sleep(1000);
         System.out.println(user);
@@ -27,6 +27,6 @@ public class QueueUsersTest {
         System.out.println(user1);
         System.out.println(user2);
         System.out.println(user3);
-    }
+    }*/
 
 }
