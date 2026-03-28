@@ -30,6 +30,7 @@ public class UsersQueueExtension implements BeforeEachCallback, AfterEachCallbac
 
     {
         EMPTY_USERS.add(new StaticUser("Britni", "12345", null, null, null));
+        EMPTY_USERS.add(new StaticUser("Margo", "12345", null, null, null));
         WITH_FRIEND_USERS.add(new StaticUser("Anderson", "12345", "Lin", null, null));
         WITH_INCOME_REQUEST_USERS.add(new StaticUser("Val", "12345", null, "Lin", null));
         WITH_OUTCOME_REQUEST_USERS.add(new StaticUser("Lin", "12345", null, null, "Val"));

@@ -5,6 +5,7 @@ import com.codeborne.selenide.Selenide;
 import io.student.rangiffler.jupiter.extention.UsersQueueExtension;
 import io.student.rangiffler.page.LandingPage;
 import io.student.rangiffler.page.LoginPage;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +53,12 @@ public class FriendsTest {
                 .openPeoplePage()
                 .selectIncomeInvitationsTab()
                 .usernameShouldBePresent(userWithIncomeRequest.incomeRequest());
+    }
+
+    @Test
+    @ExtendWith(UsersQueueExtension.class)
+    void twoEmptyUsersShouldEachSeeEmptyFriendsTable(@UserType(EMPTY) StaticUser emptyUser1, @UserType(EMPTY) StaticUser emptyUser2) {
+        Assertions.assertNotEquals(emptyUser1.name(), emptyUser2.name(), "Разные пользователи");
     }
 
     @Test
