@@ -6,4 +6,6 @@ public interface UsersClient {
 
     UserJson createUser(UserJson user);
 
+    void deleteUser(String userId);
+
 }
